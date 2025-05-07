@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Http\Requests\RegisterRequest;
+use App\Http\Requests\{
+    RegisterRequest,
+    LoginRequest
+};
 use Illuminate\Support\Facades\{
     Hash,
     Auth
@@ -24,7 +26,6 @@ class UserController extends Controller
             return response()->json(["message" => "Failed to create user"], 500);
         }
 
-        $user->tokens()->delete();
         $token = $user->createToken("auth_token")->plainTextToken;
 
         return response()->json([
@@ -32,5 +33,18 @@ class UserController extends Controller
             "token" => $token,
         ], 201);
 
+    }
+
+    public function login(LoginRequest $request)
+    {
+        $credentials = $request->only(["email", "password"]);
+        if (!Auth::attempt($credentials)) {
+            return response()->json(["message" => "Invalid credentials"], 401);
+        }
+
+        $user = Auth::user();
+        $user->tokens()->delete();
+        $token = $user->createToken("auth_token")->plainTextToken;
+        return response()->json(["token" => $token], 200);
     }
 }
