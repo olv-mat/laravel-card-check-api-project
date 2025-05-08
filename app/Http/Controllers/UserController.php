@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use App\Http\Requests\{
     RegisterRequest,
     LoginRequest
@@ -46,5 +47,10 @@ class UserController extends Controller
         $user->tokens()->delete();
         $token = $user->createToken("auth_token")->plainTextToken;
         return response()->json(["token" => $token], 200);
+    }
+
+    public function user(Request $request)
+    {
+        return $request->user();
     }
 }
