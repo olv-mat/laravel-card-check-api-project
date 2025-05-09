@@ -24,7 +24,7 @@ class UserController extends Controller
         $user = User::create($userInfo);
 
         if (!$user) {
-            return response()->json(["message" => "Failed to create user"], 500);
+            return response()->json(["message" => "Failed to create user."], 500);
         }
 
         $token = $user->createToken("auth_token")->plainTextToken;
@@ -40,7 +40,7 @@ class UserController extends Controller
     {
         $credentials = $request->only(["email", "password"]);
         if (!Auth::attempt($credentials)) {
-            return response()->json(["message" => "Invalid credentials"], 401);
+            return response()->json(["message" => "Invalid credentials."], 401);
         }
 
         $user = Auth::user();
