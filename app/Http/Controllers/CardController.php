@@ -2,31 +2,43 @@
 
 namespace App\Http\Controllers;
 
+use App\HandleResponse;
+use App\Events\ResourceConsumed;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\CardRequest;
 use Illuminate\Http\Request;
-use App\Http\Requests\{
-    CardRequest
-};
 
 class CardController extends Controller
 {
+    use HandleResponse;
+
     public function check(CardRequest $request)
     {
+        $userId = $request->user()->id;
+        $resource = "card/check";
+
         $number = $request->number;
-        return response()->json(["is_valid" => $this->luhn($number)], 200);
+        $message = ["is_valid" => $this->luhn($number)];
+        
+        return $this->dispatchAndResponse($userId, $resource, 200, $message);
     }
 
     public function generate(Request $request)
     {
-        $amount = $request->input("amount", 1);
+        $userId = $request->user()->id;
+        $resource = "card/generate";
 
+        $amount = $request->input("amount", 1);
+    
         if (is_null($amount)) {
-            return response()->json(["message" => "Please provide a value to amount."], 400);
+            $message = ["message" => "Please provide a value to amount."];
+            return $this->dispatchAndResponse($userId, $resource, 400, $message);
         }
 
         $amount = intval($amount);
         if ($amount < 1 || $amount > 100) {
-            return response()->json(["message" => "Amount must be between 1 and 100."], 400);
+            $message = ["message" => "Amount must be between 1 and 100."];
+            return $this->dispatchAndResponse($userId, $resource, 400, $message);
         }
 
         $numbers = [];
@@ -36,11 +48,13 @@ class CardController extends Controller
                 $numbers[] = $number;
             }
         }
-        return response()->json([
+
+        $message = [
             "amount" => $amount,
             "numbers" => $numbers,
-        ], 200);
+        ];
 
+        return $this->dispatchAndResponse($userId, $resource, 200, $message); 
     }
 
     private function generateRandomCardNumber(): string
