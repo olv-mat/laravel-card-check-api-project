@@ -4,7 +4,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\{
     UserController,
-    CardController
+    CardController,
+    BINController
 };
 
 Route::post('/register', [UserController::class, 'register']);
@@ -13,4 +14,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [UserController::class, 'user']);
     Route::post('/card/check', [CardController::class, 'check']);
     Route::get('/card/generate', [CardController::class, 'generate']);
+    Route::post('/bin/check', [BINController::class, 'check']);
 });
