@@ -18,22 +18,18 @@ class UserController extends Controller
 {
     public function register(RegisterRequest $request)
     {
-        $userInfo = $request->all();
-        $userInfo["password"] = Hash::make($userInfo["password"]);
+        $userData = $request->all();
+        $userData["password"] = Hash::make($userData["password"]);
         
-        $user = User::create($userInfo);
-
-        if (!$user) {
-            return response()->json(["message" => "Failed to create user."], 500);
-        }
-
+        $user = User::create($userData);
         $token = $user->createToken("auth_token")->plainTextToken;
 
-        return response()->json([
+        $message = [
             "user" => $user,
-            "token" => $token,
-        ], 201);
+            "token" => $token
+        ];
 
+        return response()->json($message, 201);
     }
 
     public function login(LoginRequest $request)
@@ -46,7 +42,23 @@ class UserController extends Controller
         $user = Auth::user();
         $user->tokens()->delete();
         $token = $user->createToken("auth_token")->plainTextToken;
-        return response()->json(["token" => $token], 200);
+
+        $message = [
+            "token" => $token
+        ];
+
+        return response()->json($message, 200);
+    }
+
+    public function logout(Request $request)
+    {
+        $request->user()->currentAccessToken()->delete();
+
+        $message = [
+            "message" => "Logged out."
+        ];
+
+        return response()->json($message, 200);
     }
 
     public function user(Request $request)

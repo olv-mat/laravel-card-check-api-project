@@ -11,6 +11,7 @@ use App\Http\Controllers\{
 Route::post('/register', [UserController::class, 'register']);
 Route::post('/login', [UserController::class, 'login']);
 Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/logout', [UserController::class, 'logout']);
     Route::get('/user', [UserController::class, 'user']);
     Route::post('/card/check', [CardController::class, 'check']);
     Route::get('/card/generate', [CardController::class, 'generate']);

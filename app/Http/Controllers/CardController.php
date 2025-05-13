@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\HandleResponse;
-use App\Events\ResourceConsumed;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CardRequest;
 use Illuminate\Http\Request;
@@ -14,47 +13,50 @@ class CardController extends Controller
 
     public function check(CardRequest $request)
     {
-        $userId = $request->user()->id;
         $resource = "card/check";
-
         $number = $request->number;
-        $message = ["is_valid" => $this->luhn($number)];
+
+        $message = [
+            "is_valid" => $this->validateLuhnAlgorithm($number)
+        ];
         
-        return $this->dispatchAndResponse($userId, $resource, 200, $message);
+        return $this->dispatchAndResponse($request, $resource, 200, $message);
     }
 
     public function generate(Request $request)
     {
-        $userId = $request->user()->id;
         $resource = "card/generate";
-
         $amount = $request->input("amount", 1);
     
         if (is_null($amount)) {
-            $message = ["message" => "Please provide a value to amount."];
-            return $this->dispatchAndResponse($userId, $resource, 400, $message);
+            $message = [
+                "message" => "Please provide a value to amount."
+            ];
+            return $this->dispatchAndResponse($request, $resource, 400, $message);
         }
 
         $amount = intval($amount);
         if ($amount < 1 || $amount > 100) {
-            $message = ["message" => "Amount must be between 1 and 100."];
-            return $this->dispatchAndResponse($userId, $resource, 400, $message);
+            $message = [
+                "message" => "Amount must be between 1 and 100."
+            ];
+            return $this->dispatchAndResponse($request, $resource, 400, $message);
         }
 
         $numbers = [];
         while (count($numbers) < $amount) {
             $number = $this->generateRandomCardNumber();
-            if ($this->luhn($number)) {
+            if ($this->validateLuhnAlgorithm($number)) {
                 $numbers[] = $number;
             }
         }
 
         $message = [
             "amount" => $amount,
-            "numbers" => $numbers,
+            "numbers" => $numbers
         ];
 
-        return $this->dispatchAndResponse($userId, $resource, 200, $message); 
+        return $this->dispatchAndResponse($request, $resource, 200, $message); 
     }
 
     private function generateRandomCardNumber(): string
@@ -67,7 +69,7 @@ class CardController extends Controller
         return $number;
     }
 
-    private function luhn(string $number): bool
+    private function validateLuhnAlgorithm(string $number): bool
     {
         $digits = str_split($number);
         $reversedDigits = [];
